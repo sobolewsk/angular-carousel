@@ -132,6 +132,10 @@
                             scope.carouselIndex = indexModel(scope);
                             scope.$parent.$watch(indexModel, function(newValue, oldValue) {
                                 if (newValue!==undefined) {
+                                    if (slidesCount===0) {
+                                        scope.carouselIndex = newValue;
+                                        return;
+                                    }
                                     if (newValue >= slidesCount) {
                                         newValue = slidesCount - 1;
                                         updateParentIndex(newValue);
