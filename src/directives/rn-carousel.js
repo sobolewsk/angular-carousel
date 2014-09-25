@@ -193,11 +193,14 @@
 
                     function updateContainerWidth() {
                         // force the carousel container width to match the first slide width
-                        container.css('width', '100%');
-                        var width = getCarouselWidth();
-                        if (width) {
-                            container.css('width', width + 'px');
-                        }
+                        setTimeout(function() {
+                            container.css('width', '100%');
+                            var width = getCarouselWidth();
+                            
+                            if (width) {
+                                container.css('width', width + 'px');
+                            }    
+                        });
                     }
 
                     function scroll(x) {
