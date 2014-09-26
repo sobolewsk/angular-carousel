@@ -92,15 +92,15 @@
                             goToSlide(newValue, true);
                         });
 
+                        scope.$watch('carouselExposedIndex', function(newValue) {
+                            goToSlide(newValue, true);
+                        });
+
                     }
 
                     if (angular.isDefined(iAttributes.rnCarouselPreventAnimation)) {
                         animOnIndexChange = false;
                     }
-
-                    scope.$watch('carouselExposedIndex', function(newValue) {
-                        goToSlide(newValue, true);
-                    });
 
                     // enable carousel indicator
                     if (angular.isDefined(iAttributes.rnCarouselIndicator)) {
@@ -400,6 +400,10 @@
                             // unbind swipe when it's switched off
                             carousel.unbind();
                         }
+                    });
+
+                    iAttributes.$observe('rnCarouselPreventAnimation', function(newValue, oldValue) {
+                        animOnIndexChange = newValue !== 'false';
                     });
 
                     // initialise first slide only if no binding
