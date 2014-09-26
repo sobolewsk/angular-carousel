@@ -1,6 +1,6 @@
 /**
  * Angular Carousel - Mobile friendly touch carousel for AngularJS
- * @version v0.2.5 - 2014-09-25
+ * @version v0.2.5 - 2014-09-26
  * @link http://revolunet.github.com/angular-carousel
  * @author Julien Bouquillon <julien@revolunet.com>
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -216,15 +216,15 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                             goToSlide(newValue, true);
                         });
 
+                        scope.$watch('carouselExposedIndex', function(newValue) {
+                            goToSlide(newValue, true);
+                        });
+
                     }
 
                     if (angular.isDefined(iAttributes.rnCarouselPreventAnimation)) {
                         animOnIndexChange = false;
                     }
-
-                    scope.$watch('carouselExposedIndex', function(newValue) {
-                        goToSlide(newValue, true);
-                    });
 
                     // enable carousel indicator
                     if (angular.isDefined(iAttributes.rnCarouselIndicator)) {
@@ -524,6 +524,10 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                             // unbind swipe when it's switched off
                             carousel.unbind();
                         }
+                    });
+
+                    iAttributes.$observe('rnCarouselPreventAnimation', function(newValue, oldValue) {
+                        animOnIndexChange = newValue !== 'false';
                     });
 
                     // initialise first slide only if no binding
