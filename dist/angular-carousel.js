@@ -1,6 +1,6 @@
 /**
  * Angular Carousel - Mobile friendly touch carousel for AngularJS
- * @version v0.2.5 - 2014-09-26
+ * @version v0.2.5 - 2014-10-03
  * @link http://revolunet.github.com/angular-carousel
  * @author Julien Bouquillon <julien@revolunet.com>
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -287,8 +287,14 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                                 slidesCount = Object.keys(newValue).length;
                             }
                             updateIndicatorArray();
-                            if (!containerWidth) updateContainerWidth();
-                            goToSlide(scope.carouselIndex);
+                            if (!containerWidth) {
+                                setTimeout(function(){
+                                    updateContainerWidth();
+                                    goToSlide(scope.carouselIndex);
+                                });
+                            } else { 
+                                goToSlide(scope.carouselIndex);
+                            }
                         });
                     } else {
                         slidesCount = iElement.children().length;
@@ -317,14 +323,12 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
 
                     function updateContainerWidth() {
                         // force the carousel container width to match the first slide width
-                        setTimeout(function() {
-                            container.css('width', '100%');
-                            var width = getCarouselWidth();
-                            
-                            if (width) {
-                                container.css('width', width + 'px');
-                            }    
-                        });
+                        container.css('width', '100%');
+                        var width = getCarouselWidth();
+                        
+                        if (width) {
+                            container.css('width', width + 'px');
+                        }    
                     }
 
                     function scroll(x) {
