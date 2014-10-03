@@ -163,8 +163,14 @@
                                 slidesCount = Object.keys(newValue).length;
                             }
                             updateIndicatorArray();
-                            if (!containerWidth) updateContainerWidth();
-                            goToSlide(scope.carouselIndex);
+                            if (!containerWidth) {
+                                setTimeout(function(){
+                                    updateContainerWidth();
+                                    goToSlide(scope.carouselIndex);
+                                });
+                            } else { 
+                                goToSlide(scope.carouselIndex);
+                            }
                         });
                     } else {
                         slidesCount = iElement.children().length;
@@ -193,14 +199,12 @@
 
                     function updateContainerWidth() {
                         // force the carousel container width to match the first slide width
-                        setTimeout(function() {
-                            container.css('width', '100%');
-                            var width = getCarouselWidth();
-                            
-                            if (width) {
-                                container.css('width', width + 'px');
-                            }    
-                        });
+                        container.css('width', '100%');
+                        var width = getCarouselWidth();
+                        
+                        if (width) {
+                            container.css('width', width + 'px');
+                        }    
                     }
 
                     function scroll(x) {
