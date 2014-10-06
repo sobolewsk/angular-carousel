@@ -1,6 +1,6 @@
 /**
  * Angular Carousel - Mobile friendly touch carousel for AngularJS
- * @version v0.2.5 - 2014-10-03
+ * @version v0.2.5 - 2014-10-06
  * @link http://revolunet.github.com/angular-carousel
  * @author Julien Bouquillon <julien@revolunet.com>
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -131,6 +131,8 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
         // internal ids to allow multiple instances
         var carouselId = 0,
             // used to compute the sliding speed
+            swipeTimeConstant = 75,
+            boundIndexTimeConstant = 175,
             timeConstant = 75,
             // in container % how much we need to drag to trigger the slide change
             moveTreshold = 0.05,
@@ -267,6 +269,7 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                                         newValue = 0;
                                         updateParentIndex(newValue);
                                     }
+                                    timeConstant = boundIndexTimeConstant;
                                     goToSlide(newValue, animOnIndexChange);
                                 }
                             });
@@ -448,6 +451,7 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
 
                         amplitude = 0;
                         timestamp = Date.now();
+                        timeConstant = swipeTimeConstant;
 
                         return false;
                     }

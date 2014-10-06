@@ -7,6 +7,8 @@
         // internal ids to allow multiple instances
         var carouselId = 0,
             // used to compute the sliding speed
+            swipeTimeConstant = 75,
+            boundIndexTimeConstant = 175,
             timeConstant = 75,
             // in container % how much we need to drag to trigger the slide change
             moveTreshold = 0.05,
@@ -143,6 +145,7 @@
                                         newValue = 0;
                                         updateParentIndex(newValue);
                                     }
+                                    timeConstant = boundIndexTimeConstant;
                                     goToSlide(newValue, animOnIndexChange);
                                 }
                             });
@@ -324,6 +327,7 @@
 
                         amplitude = 0;
                         timestamp = Date.now();
+                        timeConstant = swipeTimeConstant;
 
                         return false;
                     }
