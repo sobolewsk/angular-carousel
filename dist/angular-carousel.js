@@ -1,6 +1,6 @@
 /**
  * Angular Carousel - Mobile friendly touch carousel for AngularJS
- * @version v0.2.5 - 2014-10-06
+ * @version v0.2.5 - 2014-10-13
  * @link http://revolunet.github.com/angular-carousel
  * @author Julien Bouquillon <julien@revolunet.com>
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -132,7 +132,7 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
         var carouselId = 0,
             // used to compute the sliding speed
             swipeTimeConstant = 75,
-            boundIndexTimeConstant = 175,
+            boundIndexTimeConstant = 275,
             timeConstant = 75,
             // in container % how much we need to drag to trigger the slide change
             moveTreshold = 0.05,
@@ -200,6 +200,7 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                         slidesCount = 0,
                         swipeMoved = false,
                         animOnIndexChange = true,
+                        destinationIndex = 0,
                         // javascript based animation easing
                         timestamp;
 
@@ -257,11 +258,19 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                             });
                             scope.carouselIndex = indexModel(scope);
                             scope.$parent.$watch(indexModel, function(newValue, oldValue) {
+                                
                                 if (newValue!==undefined) {
                                     if (slidesCount===0) {
                                         scope.carouselIndex = newValue;
+                                        destinationIndex = scope.carouselIndex;
                                         return;
                                     }
+
+                                    if (newValue===scope.carouselIndex)
+                                        return;
+
+                                    //console.log('watch', newValue, oldValue)
+
                                     if (newValue >= slidesCount) {
                                         newValue = slidesCount - 1;
                                         updateParentIndex(newValue);
@@ -270,7 +279,24 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                                         updateParentIndex(newValue);
                                     }
                                     timeConstant = boundIndexTimeConstant;
-                                    goToSlide(newValue, animOnIndexChange);
+
+                                    //fix loop
+                                    if (slidesCount>3) {
+                                        var numSlides = slidesCount - 2;
+                                        
+                                        if (newValue<1 || newValue>numSlides) {
+                                            var currentOffset = destinationIndex * containerWidth,
+                                                idx = newValue<1 ? slidesCount - 1 : 0,
+                                                newLoopIndex = ((newValue - 1) + numSlides) % numSlides;
+                                            
+                                            scroll( (idx * containerWidth) + (offset - currentOffset) );
+                                            newValue = newLoopIndex + 1;
+                                            updateParentIndex(newValue);
+                                            scope.carouselIndex = newValue;
+                                        }
+
+                                        goToSlide(newValue, animOnIndexChange);
+                                    }
                                 }
                             });
                             isIndexBound = true;
@@ -341,6 +367,7 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                         }
 
                         offset = x;
+                        //console.log('offset', x)
                         var move = -Math.round(offset);
                         move += (scope.carouselBufferIndex * containerWidth);
 
@@ -400,11 +427,14 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                         if (animate) {
                             // simulate a swipe so we have the standard animation
                             // used when external binding index is updated or touch canceed
-                            offset = (i * containerWidth);
-                            swipeEnd(null, null, true);
+                            //offset = (i * containerWidth);
+                            swipeEnd(null, null, (i * containerWidth));
                             return;
                         }
+                        //offset = 0;
+                        //console.log('goToSlide', i)
                         scope.carouselIndex = capIndex(i);
+                        destinationIndex = scope.carouselIndex;
                         updateBufferIndex();
                         // if outside of angular scope, trigger angular digest cycle
                         // use local digest only for perfs if no index bound
@@ -476,7 +506,7 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                         return false;
                     }
 
-                    function swipeEnd(coords, event, forceAnimation) {
+                    function swipeEnd(coords, event, dest) {
                         //console.log('swipeEnd', 'scope.carouselIndex', scope.carouselIndex);
 
                         // Prevent clicks on buttons inside slider to trigger "swipeEnd" event on touchend/mouseup
@@ -484,11 +514,14 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                             return;
                         }
 
+
                         $document.unbind('mouseup', documentMouseUpEvent);
                         pressed = false;
                         swipeMoved = false;
 
                         destination = offset;
+                        if (dest)
+                            destination = dest;
 
                         var minMove = getAbsMoveTreshold(),
                             currentOffset = (scope.carouselIndex * containerWidth),
@@ -504,12 +537,34 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                         }
                         var moveOffset = shouldMove?slidesMove:0;
 
-                        destination = (moveOffset + scope.carouselIndex) * containerWidth;
-                        amplitude = destination - offset;
-                        timestamp = Date.now();
-                        if (forceAnimation) {
-                            amplitude = offset - currentOffset;
+                        
+                        if (!dest && slidesCount>3) {
+                            //fix loop
+                            var newValue = moveOffset + scope.carouselIndex;
+                            var numSlides = slidesCount - 2;
+                            var newLoopIndex = ((newValue - 1) + numSlides) % numSlides;
+                            
+                            if (newValue<1 || newValue>numSlides) {
+                                var idx = newValue<1 ? slidesCount - 1 : 0;
+                                scroll( (idx * containerWidth) + (offset - currentOffset) );
+                                newValue = newLoopIndex + 1;
+                                scope.carouselIndex = idx;
+                                updateParentIndex(newValue);
+                                scope.$apply();
+                            }
                         }
+                        
+
+                        destination = (moveOffset + scope.carouselIndex) * containerWidth;
+                        destinationIndex = destination / containerWidth;
+                        amplitude = destination - offset;
+                        
+                        timestamp = Date.now();
+                        //if (dest) {
+                            //amplitude = offset - currentOffset;
+                        //}
+
+
                         /* We are using raf.js, a requestAnimationFrame polyfill, so
                         this will work on IE9 */
                         requestAnimationFrame(autoScroll);
@@ -600,7 +655,6 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
     }]);
 
 })();
-
 (function() {
     "use strict";
 
